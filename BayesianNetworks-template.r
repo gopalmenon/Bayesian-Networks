@@ -103,9 +103,104 @@ createCPTfromData = function(x, varnames)
 ##
 ## Should return a factor table that is the product of A and B.
 ## You can assume that the product of A and B is a valid operation.
-productFactor = function(A, B)
-{
-  ## Your code here!
+productFactor = function(table_a, table_b) {
+
+  # Variables in product
+  output_columns = union(colnames(table_a)[-1], colnames(table_b)[-1])
+  
+  # Common variables in input tables
+  common_variables = intersect(colnames(table_a)[-1], colnames(table_b)[-1])
+  
+  # Variables only in Tables A and B
+  table_a_only_variables = setdiff(colnames(table_a)[-1], common_variables)
+  table_b_only_variables = setdiff(colnames(table_b)[-1], common_variables)
+  
+  table_a_rows = NROW(table_a)
+  table_b_rows = NROW(table_b)
+  
+  probabilities_column = numeric()
+  row_counter = 0
+  
+  # Loop through the tables and find the product
+  for (table_a_index in 1:table_a_rows) {
+    for (table_b_index in 1:table_b_rows) {
+      
+      # Join the two tables unconditionally if no common variables  
+      if (len(common_variables) == 0) {
+
+        
+        
+      } else {
+        
+        rows_overlap = TRUE
+        
+        # Loop through the common variables
+        for (common_variable_index in 1:len(common_variables)) {
+          
+          # Find out if the common variables have the same values in both tables
+          if (table_a[common_variables[common_variable_index]][[1]][table_a_index] !=
+              table_b[common_variables[common_variable_index]][[1]][table_b_index]) {
+            rows_overlap = FALSE
+            break
+          }
+
+        }
+      
+        # If the rows overlap, then create a row in the output table
+        if (isTRUE(rows_overlap)) {
+          
+          row_counter = row_counter + 1
+          column_counter = 0
+          
+          # Define a matrix for the output values with no rows
+          output_values_matrix = matrix("", 0, length(output_columns))
+          
+          probabilities_column[row_counter] = table_a$probs[table_a_index] * table_b$probs[table_b_index]
+          
+          output_row_variables = character(length = length(output_columns))
+          
+          #Put in values only in Table A
+          for (column_value in table_a_only_variables) {
+            
+            column_counter = column_counter + 1
+            output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+            
+          }
+          
+          #Put in values only in Table B
+          for (column_value in table_b_only_variables) {
+            
+            column_counter = column_counter + 1
+            output_row_variables[column_counter] = table_b[column_value][[1]][table_b_index]
+            
+          }
+          
+          # Put in common values
+          for (column_value in common_variables) {
+            
+            column_counter = column_counter + 1
+            output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+            
+          }
+          
+          # Add the output values to the matrix
+          output_values_matrix = rbind(output_values_matrix, output_row_variables)
+
+        }
+      }
+      
+      # Convert the output matrix to a data frame
+      output_values_matrix = as.data.frame(output_values_matrix)
+      
+      # Add column names for the output values 
+      names(output_values_matrix) = c(as.character(table_a_only_variables), as.character(table_b_only_variables), as.character(common_variables))
+      
+      return(data.frame(probs = probabilities_column, output_values_matrix))
+      
+    }
+  }
+  
+  
 }
 
 ## Marginalize a variable from a factor
