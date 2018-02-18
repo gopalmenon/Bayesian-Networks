@@ -121,21 +121,48 @@ productFactor = function(table_a, table_b) {
   probabilities_column = numeric()
   row_counter = 0
   
+  # Define a matrix for the output values with no rows
+  output_values_matrix = matrix("", 0, length(output_columns))
+  
   # Loop through the tables and find the product
   for (table_a_index in 1:table_a_rows) {
     for (table_b_index in 1:table_b_rows) {
       
       # Join the two tables unconditionally if no common variables  
-      if (len(common_variables) == 0) {
+      if (length(common_variables) == 0) {
 
+        row_counter = row_counter + 1
+        column_counter = 0
         
+        probabilities_column[row_counter] = table_a$probs[table_a_index] * table_b$probs[table_b_index]
+        
+        output_row_variables = character(length = length(output_columns))
+        
+        #Put in values from Table A
+        for (column_value in table_a_only_variables) {
+          
+          column_counter = column_counter + 1
+          output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+          
+        }
+        
+        #Put in values from Table B
+        for (column_value in table_b_only_variables) {
+          
+          column_counter = column_counter + 1
+          output_row_variables[column_counter] = table_b[column_value][[1]][table_b_index]
+          
+        }
+
+        # Add the output values to the matrix
+        output_values_matrix = rbind(output_values_matrix, output_row_variables)
         
       } else {
         
         rows_overlap = TRUE
         
         # Loop through the common variables
-        for (common_variable_index in 1:len(common_variables)) {
+        for (common_variable_index in 1:length(common_variables)) {
           
           # Find out if the common variables have the same values in both tables
           if (table_a[common_variables[common_variable_index]][[1]][table_a_index] !=
@@ -151,9 +178,6 @@ productFactor = function(table_a, table_b) {
           
           row_counter = row_counter + 1
           column_counter = 0
-          
-          # Define a matrix for the output values with no rows
-          output_values_matrix = matrix("", 0, length(output_columns))
           
           probabilities_column[row_counter] = table_a$probs[table_a_index] * table_b$probs[table_b_index]
           
@@ -189,17 +213,16 @@ productFactor = function(table_a, table_b) {
         }
       }
       
-      # Convert the output matrix to a data frame
-      output_values_matrix = as.data.frame(output_values_matrix)
-      
-      # Add column names for the output values 
-      names(output_values_matrix) = c(as.character(table_a_only_variables), as.character(table_b_only_variables), as.character(common_variables))
-      
-      return(data.frame(probs = probabilities_column, output_values_matrix))
-      
     }
   }
   
+  # Convert the output matrix to a data frame
+  output_values_matrix = as.data.frame(output_values_matrix)
+  
+  # Add column names for the output values 
+  names(output_values_matrix) = c(as.character(table_a_only_variables), as.character(table_b_only_variables), as.character(common_variables))
+  
+  return(data.frame(probs = probabilities_column, output_values_matrix))
   
 }
 
