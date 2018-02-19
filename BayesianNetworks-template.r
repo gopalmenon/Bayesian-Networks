@@ -232,9 +232,38 @@ productFactor = function(table_a, table_b) {
 ##
 ## Should return a factor table that marginalizes margVar out of A.
 ## You can assume that margVar is on the left side of the conditional.
-marginalizeFactor = function(X, margVar)
-{
-  ## Your code here!
+marginalizeFactor = function(from_factor, marginalize_variable) {
+
+  # Variables in marginalized factor
+  output_columns = setdiff(colnames(from_factor)[-1], marginalize_variable)
+  
+  # Define a matrix for the output values with no rows
+  output_values_matrix = matrix("", 0, length(output_columns))
+  
+  from_factor_rows = NROW(from_factor)
+    
+  # Loop through the rows in the from factor table
+  for (input_row_number in 1:from_factor_rows) {
+    
+    output_row_variables = character(length = length(output_columns))
+    column_counter = 0
+    
+    # Build a row without the variable to be marginalized
+    for (column_value in output_columns) {
+    
+      if (column_value != marginalize_variable) {
+        column_counter = column_counter + 1
+        output_row_variables[column_counter] = from_factor[column_value][[1]][input_row_number]
+      }
+    
+    }
+    
+    # Look for the row in the output matrix
+    
+    # Add probabilities if row already present or insert a new row
+    
+  }
+  
 }
 
 ## Marginalize a list of variables
