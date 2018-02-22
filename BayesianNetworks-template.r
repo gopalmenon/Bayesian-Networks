@@ -123,6 +123,8 @@ productFactor = function(table_a, table_b) {
   
   # Define a matrix for the output values with no rows
   output_values_matrix = matrix("", 0, length(output_columns))
+  output_values_matrix = as.data.frame(output_values_matrix, stringsAsFactors = FALSE)
+  names(output_values_matrix) = c(as.character(table_a_only_variables), as.character(table_b_only_variables), as.character(common_variables))
   
   # Loop through the tables and find the product
   for (table_a_index in 1:table_a_rows) {
@@ -165,8 +167,8 @@ productFactor = function(table_a, table_b) {
         for (common_variable_index in 1:length(common_variables)) {
           
           # Find out if the common variables have the same values in both tables
-          if (table_a[common_variables[common_variable_index]][[1]][table_a_index] !=
-              table_b[common_variables[common_variable_index]][[1]][table_b_index]) {
+          if (table_a[table_a_index, common_variables[common_variable_index]] !=
+              table_b[table_b_index, common_variables[common_variable_index]]) {
             rows_overlap = FALSE
             break
           }
@@ -187,7 +189,7 @@ productFactor = function(table_a, table_b) {
           for (column_value in table_a_only_variables) {
             
             column_counter = column_counter + 1
-            output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+            output_row_variables[column_counter] = table_a[table_a_index, column_value]
             
           }
           
@@ -195,7 +197,7 @@ productFactor = function(table_a, table_b) {
           for (column_value in table_b_only_variables) {
             
             column_counter = column_counter + 1
-            output_row_variables[column_counter] = table_b[column_value][[1]][table_b_index]
+            output_row_variables[column_counter] = table_b[table_b_index, column_value]
             
           }
           
@@ -203,25 +205,19 @@ productFactor = function(table_a, table_b) {
           for (column_value in common_variables) {
             
             column_counter = column_counter + 1
-            output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+            output_row_variables[column_counter] = table_a[table_a_index, column_value]
             
           }
           
           # Add the output values to the matrix
-          output_values_matrix = rbind(output_values_matrix, output_row_variables)
+          output_values_matrix[row_counter, ] = output_row_variables
 
         }
       }
       
     }
   }
-  
-  # Convert the output matrix to a data frame
-  output_values_matrix = as.data.frame(output_values_matrix)
-  
-  # Add column names for the output values 
-  names(output_values_matrix) = c(as.character(table_a_only_variables), as.character(table_b_only_variables), as.character(common_variables))
-  
+
   return(data.frame(probs = probabilities_column, output_values_matrix))
   
 }
@@ -239,6 +235,10 @@ marginalizeFactor = function(from_factor, marginalize_variable) {
   
   # Define a matrix for the output values with no rows
   output_values_matrix = matrix("", 0, length(output_columns))
+  output_values_matrix = as.data.frame(output_values_matrix, stringsAsFactors = FALSE)
+  names(output_values_matrix) = c(as.character(output_columns))
+  
+  probabilities_column = numeric()
   
   from_factor_rows = NROW(from_factor)
     
@@ -253,16 +253,35 @@ marginalizeFactor = function(from_factor, marginalize_variable) {
     
       if (column_value != marginalize_variable) {
         column_counter = column_counter + 1
-        output_row_variables[column_counter] = from_factor[column_value][[1]][input_row_number]
+        temp_var = from_factor[column_value][[1]][[input_row_number]]
+        output_row_variables[column_counter] = temp_var
       }
     
     }
     
     # Look for the row in the output matrix
+    output_rows = dim(output_values_matrix)[1]
+    row_match_found = FALSE
+    if (output_rows != 0) {
+      for (row_counter in 1:output_rows) {
+        if (all(output_row_variables == output_values_matrix[row_counter, ])) {
+          row_match_found = TRUE
+          break
+        }
+      }
+    }
     
     # Add probabilities if row already present or insert a new row
+    if (isTRUE(row_match_found)) {
+      probabilities_column[row_counter] = from_factor$probs[input_row_number] + probabilities_column[row_counter]
+    } else {
+      probabilities_column[length(probabilities_column) + 1] = from_factor$probs[input_row_number]
+      output_values_matrix[length(probabilities_column), ] = output_row_variables
+    }
     
   }
+
+  return(data.frame(probs = probabilities_column, output_values_matrix))
   
 }
 
