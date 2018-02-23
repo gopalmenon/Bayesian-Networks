@@ -26,3 +26,16 @@ risk_factors_bayes_net[[table_counter]] = probability_density_tables[[which(cdc_
 table_counter = table_counter + 1
 risk_factors_bayes_net[[table_counter]] = productFactor(probability_density_tables[[which(cdc_survey_variables == "smoke")]],
                                                         probability_density_tables[[which(cdc_survey_variables == "income")]])
+
+# Add exercise given income
+table_counter = table_counter + 1
+risk_factors_bayes_net[[table_counter]] = exercise_given_income =
+  productFactor(probability_density_tables[[which(cdc_survey_variables == "exercise")]],
+                probability_density_tables[[which(cdc_survey_variables == "income")]])
+
+# Add bmi given income and exercise
+table_counter = table_counter + 1
+risk_factors_bayes_net[[table_counter]] = bmi_given_exercise_income =
+  productFactor(productFactor(probability_density_tables[[which(cdc_survey_variables == "bmi")]],
+                probability_density_tables[[which(cdc_survey_variables == "income")]]),
+                exercise_given_income)
