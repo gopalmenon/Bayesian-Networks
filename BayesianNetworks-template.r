@@ -144,7 +144,7 @@ productFactor = function(table_a, table_b) {
         for (column_value in table_a_only_variables) {
           
           column_counter = column_counter + 1
-          output_row_variables[column_counter] = table_a[column_value][[1]][table_a_index]
+          output_row_variables[column_counter] = table_a[table_a_index, column_value]
           
         }
         
@@ -152,12 +152,12 @@ productFactor = function(table_a, table_b) {
         for (column_value in table_b_only_variables) {
           
           column_counter = column_counter + 1
-          output_row_variables[column_counter] = table_b[column_value][[1]][table_b_index]
+          output_row_variables[column_counter] = table_b[table_b_index, column_value]
           
         }
 
         # Add the output values to the matrix
-        output_values_matrix = rbind(output_values_matrix, output_row_variables)
+        output_values_matrix[row_counter, ] = output_row_variables
         
       } else {
         
