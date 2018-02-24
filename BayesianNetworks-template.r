@@ -253,8 +253,7 @@ marginalizeFactor = function(from_factor, marginalize_variable) {
     
       if (column_value != marginalize_variable) {
         column_counter = column_counter + 1
-        temp_var = from_factor[column_value][[1]][[input_row_number]]
-        output_row_variables[column_counter] = temp_var
+        output_row_variables[column_counter] = from_factor[input_row_number, column_value]
       }
     
     }
@@ -304,9 +303,76 @@ marginalize = function(bayesnet, margVars)
 ## Set the values of the observed variables. Other values for the variables
 ## should be removed from the tables. You do not need to normalize the factors
 ## to be probability mass functions.
-observe = function(bayesnet, obsVars, obsVals)
-{
-  ## Your code here!
+observe = function(bayesnet, obsVars, obsVals) {
+  
+  # Create a copy of the Bayes Net with empty factor tables
+  bayes_net_observed = list()
+  factor_table_counter = 0
+  for (factor_table in bayesnet) {
+    factor_table_counter = factor_table_counter + 1
+    factor_table_copy = matrix(0, 0, length(factor_table))
+    factor_table_copy = as.data.frame(factor_table_copy)
+    names(factor_table_copy) = names(factor_table)
+    bayes_net_observed[[factor_table_counter]] = factor_table_copy
+  }
+  
+  # Loop through each factor in the Bayes Net and move over observed variable rows
+  factor_table_counter = 0
+  for (factor_table in bayesnet) {
+    
+    factor_table_counter = factor_table_counter + 1
+    factor_table_rows = NROW(factor_table)
+    observed_variables_count = length(obsVars)
+    
+    # Check for observed variable in factor table only if variable is part of the table
+    for (observed_variable_index in 1:observed_variables_count) {
+      
+      if (!is.null(factor_table[[obsVars[observed_variable_index]]])) {
+
+        # Loop through the rows in the from factor table and check for observed variable
+        for (input_row_number in 1:factor_table_rows) {
+          
+          if (factor_table[[obsVars[observed_variable_index]]][input_row_number] == obsVals[observed_variable_index]) {
+
+            bayes_net_observed[[factor_table_counter]] = 
+              rbind(bayes_net_observed[[factor_table_counter]], factor_table[input_row_number,])
+
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+  }
+  
+  
+  # Loop through each factor in the Bayes Net and move over factors that do not have any of the observed variables
+  factor_table_counter = 0
+  for (factor_table in bayesnet) {
+  
+    factor_table_counter = factor_table_counter + 1
+    
+    # Check if factor table has any observed variable
+    no_observed_vars_found = TRUE
+    for (observed_variable_index in 1:observed_variables_count) {
+      if (!is.null(factor_table[[obsVars[observed_variable_index]]])) {
+        no_observed_vars_found = FALSE
+        break
+      }
+    }
+    
+    # Move over the factor table if it has none of the observed variables
+    if (isTRUE(no_observed_vars_found)) {
+      bayes_net_observed[[factor_table_counter]] = bayesnet[[factor_table_counter]]
+    }
+    
+  }
+  
+  names(bayes_net_observed) = names(bayesnet)
+  return(bayes_net_observed)
+  
 }
 
 ## Run inference on a Bayesian network
