@@ -408,3 +408,40 @@ infer = function(bayesnet, margVars, obsVars, obsVals)
 {
   ## Your code here!
 }
+
+## Return the variable that should be marginalized next from the bayes net.
+## bayes_net: a list of factor tables
+## variables_to_marginalize: a vector of variable names (as strings) to be marginalized
+##
+## Will return the variable that should be marginalized next from the bayes net.
+marginalize_order = function(bayes_net, variables_to_marginalize) {
+
+  # Vector to store expected size of marginalized tables
+  marginalized_tables_size = integer()
+  
+  # Loop through the list of variables to be marginalized
+  for (random_variable in variables_to_marginalize) {
+    
+    # Vector to store columns in tables containing variable being marginalized
+    variable_product_columns = character()
+    
+    # Loop through the factor tables in the Bayes net
+    for (factor_table in bayes_net) {
+      
+      # Check if the table contains the random variable
+      if (!is.null(factor_table[[random_variable]])) {
+        variable_product_columns = union(variable_product_columns, names(factor_table)[-1])
+      }
+
+    }
+    
+    # Store number of columns needed for marginalized variable
+    marginalized_tables_size[length(marginalized_tables_size) + 1] = length(variable_product_columns)
+    
+  }
+  
+  # Return the variable that will result in the smallest table when marginalized
+  variable_and_table_sizes = data.frame(variables = variables_to_marginalize, table_sizes = marginalized_tables_size, stringsAsFactors = FALSE)
+  return(variable_and_table_sizes[order(variable_and_table_sizes$table_sizes), ][[1]][1])
+  
+}
