@@ -284,15 +284,88 @@ marginalizeFactor = function(from_factor, marginalize_variable) {
   
 }
 
-## Marginalize a list of variables
-## bayesnet: a list of factor tables
-## margVars: a vector of variable names (as strings) to be marginalized
+## Return the product of all the factors passed in
+## factors_to_marginalize: a list of factor tables
 ##
-## Should return a Bayesian network (list of factor tables) that results
-## when the list of variables in margVars is marginalized out of bayesnet.
-marginalize = function(bayesnet, margVars)
-{
-  ## Your code here!
+## Will return the product of all the factors passed in.
+factors_product = function(factors_to_marginalize) {
+  
+  product_of_factors = NULL
+  
+  # Loop through all the factors passed in
+  for (factor_table in factors_to_marginalize) {
+    
+    # FInd the product of all the factors
+    if (!is.null(product_of_factors)) {
+      product_of_factors = productFactor(product_of_factors, factor_table)
+    } else {
+      product_of_factors = factor_table
+    }
+    
+  }
+  
+  return(product_of_factors)
+  
+}
+
+## Marginalize a variable from the bayes net
+## bayes_net: a list of factor tables
+## maginaliize_next: the variable to be marginalized
+##
+## Should return a Bayesian network (list of factor tables) that results when the 
+## variable is marginalized out of bayes_net.
+marginalize_variable = function(bayes_net, maginaliize_next) {
+ 
+  marginalized_bayes_net = list()
+  factors_to_marginalize = list()
+    
+  # Loop through factors in the bayes net
+  for (factor_table in bayes_net) {
+  
+    # Check if factor contain variable to be marginalized
+    if (!is.null(factor_table[[maginaliize_next]])) {
+      
+      # Add the factor to a list to be maginalized later
+      factors_to_marginalize[length(factors_to_marginalize) + 1] = factor_table
+      
+      
+    } else {
+      
+      # Save the factor tables not containing variables to marginalize
+      marginalized_bayes_net[length(marginalized_bayes_net) + 1] = factor_table
+      
+    }
+  
+  }
+  
+  # Save the marginalized factor table into the bayes net
+  marginalized_bayes_net[length(marginalized_bayes_net) + 1] = 
+    marginalizeFactor(factors_product(factors_to_marginalize), maginaliize_next)
+  
+  return(marginalized_bayes_net)
+   
+}
+
+## Marginalize a list of variables
+## bayes_net: a list of factor tables
+## variables_to_marginalize: a vector of variable names (as strings) to be marginalized
+##
+## Should return a Bayesian network (list of factor tables) that results when the 
+## list of variables in variables_to_marginalize is marginalized out of bayes_net.
+marginalize = function(bayes_net, variables_to_marginalize) {
+
+  while (length(variables_to_marginalize) > 0) {
+    
+    maginaliize_next = next_to_marginalize(bayes_net, variables_to_marginalize)
+        
+    bayes_net = marginalize_variable(bayes_net, maginaliize_next)
+
+    variables_to_marginalize = variables_to_marginalize[variables_to_marginalize != maginaliize_next]
+    
+  }
+  
+  return(bayes_net)
+  
 }
 
 ## Observe values for a set of variables
@@ -414,7 +487,7 @@ infer = function(bayesnet, margVars, obsVars, obsVals)
 ## variables_to_marginalize: a vector of variable names (as strings) to be marginalized
 ##
 ## Will return the variable that should be marginalized next from the bayes net.
-marginalize_order = function(bayes_net, variables_to_marginalize) {
+next_to_marginalize = function(bayes_net, variables_to_marginalize) {
 
   # Vector to store expected size of marginalized tables
   marginalized_tables_size = integer()
