@@ -334,8 +334,24 @@ observe = function(bayesnet, obsVars, obsVals) {
           
           if (factor_table[[obsVars[observed_variable_index]]][input_row_number] == obsVals[observed_variable_index]) {
 
-            bayes_net_observed[[factor_table_counter]] = 
-              rbind(bayes_net_observed[[factor_table_counter]], factor_table[input_row_number,])
+            # Check if the observed row already exists in the destination factor
+            row_not_found = TRUE
+            observed_table_rows = NROW(bayes_net_observed[[factor_table_counter]])
+            if (observed_table_rows > 0) {
+              for (observed_table_row_counter in 1:observed_table_rows) {
+                if (all(bayes_net_observed[[factor_table_counter]][observed_table_row_counter,] == 
+                        factor_table[input_row_number,])) {
+                  row_not_found = FALSE
+                  break
+                }
+              }
+            }
+              
+            # Copy the row over if it does not already exist
+            if (isTRUE(row_not_found)) {
+              bayes_net_observed[[factor_table_counter]] = 
+                rbind(bayes_net_observed[[factor_table_counter]], factor_table[input_row_number,])
+            }
 
           }
           
