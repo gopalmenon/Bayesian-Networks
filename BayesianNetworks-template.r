@@ -326,20 +326,20 @@ marginalize_variable = function(bayes_net, maginaliize_next) {
     if (!is.null(factor_table[[maginaliize_next]])) {
       
       # Add the factor to a list to be maginalized later
-      factors_to_marginalize[length(factors_to_marginalize) + 1] = factor_table
+      factors_to_marginalize[[length(factors_to_marginalize) + 1]] = factor_table
       
       
     } else {
       
       # Save the factor tables not containing variables to marginalize
-      marginalized_bayes_net[length(marginalized_bayes_net) + 1] = factor_table
+      marginalized_bayes_net[[length(marginalized_bayes_net) + 1]] = factor_table
       
     }
   
   }
   
   # Save the marginalized factor table into the bayes net
-  marginalized_bayes_net[length(marginalized_bayes_net) + 1] = 
+  marginalized_bayes_net[[length(marginalized_bayes_net) + 1]] = 
     marginalizeFactor(factors_product(factors_to_marginalize), maginaliize_next)
   
   return(marginalized_bayes_net)
