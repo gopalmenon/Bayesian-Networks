@@ -378,91 +378,70 @@ marginalize = function(bayes_net, variables_to_marginalize) {
 ## to be probability mass functions.
 observe = function(bayesnet, obsVars, obsVals) {
   
-  # Create a copy of the Bayes Net with empty factor tables
-  bayes_net_observed = list()
-  factor_table_counter = 0
-  for (factor_table in bayesnet) {
-    factor_table_counter = factor_table_counter + 1
-    factor_table_copy = matrix(0, 0, length(factor_table))
-    factor_table_copy = as.data.frame(factor_table_copy)
-    names(factor_table_copy) = names(factor_table)
-    bayes_net_observed[[factor_table_counter]] = factor_table_copy
-  }
-  
   # Loop through each factor in the Bayes Net and move over observed variable rows
   factor_table_counter = 0
   for (factor_table in bayesnet) {
     
     factor_table_counter = factor_table_counter + 1
-    factor_table_rows = NROW(factor_table)
     observed_variables_count = length(obsVars)
     
     # Check for observed variable in factor table only if variable is part of the table
     for (observed_variable_index in 1:observed_variables_count) {
       
+      # Make an empty copy of the factor table
+      factor_table_copy = matrix(0, 0, length(factor_table))
+      factor_table_copy = as.data.frame(factor_table_copy)
+      names(factor_table_copy) = names(factor_table)
+      factor_table_copy_row_counter = 0
+      
       if (!is.null(factor_table[[obsVars[observed_variable_index]]])) {
 
         # Loop through the rows in the from factor table and check for observed variable
+        factor_table_rows = NROW(factor_table)
         for (input_row_number in 1:factor_table_rows) {
           
           if (factor_table[[obsVars[observed_variable_index]]][input_row_number] == obsVals[observed_variable_index]) {
 
-            # Check if the observed row already exists in the destination factor
-            row_not_found = TRUE
-            observed_table_rows = NROW(bayes_net_observed[[factor_table_counter]])
-            if (observed_table_rows > 0) {
-              for (observed_table_row_counter in 1:observed_table_rows) {
-                if (all(bayes_net_observed[[factor_table_counter]][observed_table_row_counter,] == 
-                        factor_table[input_row_number,])) {
-                  row_not_found = FALSE
-                  break
-                }
-              }
-            }
-              
-            # Copy the row over if it does not already exist
-            if (isTRUE(row_not_found)) {
-              bayes_net_observed[[factor_table_counter]] = 
-                rbind(bayes_net_observed[[factor_table_counter]], factor_table[input_row_number,])
-            }
+            # Copy the row over to the factor table copy
+            factor_table_copy_row_counter = factor_table_copy_row_counter + 1
+            factor_table_copy[factor_table_copy_row_counter, ] = factor_table[input_row_number, ]
 
           }
           
         }
         
+        # Copy over the factor table copy so that only the rows with observed values are retained
+        factor_table = factor_table_copy
+        
       }
       
     }
     
-  }
-  
-  
-  # Loop through each factor in the Bayes Net and move over factors that do not have any of the observed variables
-  factor_table_counter = 0
-  for (factor_table in bayesnet) {
-  
-    factor_table_counter = factor_table_counter + 1
-    
-    # Check if factor table has any observed variable
-    no_observed_vars_found = TRUE
-    for (observed_variable_index in 1:observed_variables_count) {
-      if (!is.null(factor_table[[obsVars[observed_variable_index]]])) {
-        no_observed_vars_found = FALSE
-        break
-      }
-    }
-    
-    # Move over the factor table if it has none of the observed variables
-    if (isTRUE(no_observed_vars_found)) {
-      bayes_net_observed[[factor_table_counter]] = bayesnet[[factor_table_counter]]
-    }
+    bayesnet[[factor_table_counter]] = factor_table
     
   }
   
-  names(bayes_net_observed) = names(bayesnet)
-  return(bayes_net_observed)
+  return(bayesnet)
   
 }
+
+## Normalize a factor table so that the probability column adds up to 1
+## factor_table: factor table
+##
+## This function will return the normalized factor table
+normalize_factor = function(factor_table) {
+  
+  table_rows = length(factor_table$probs)
+  normalizing_denominator = sum(factor_table$probs)
+  
+  # Normalize each probability
+  for (row_counter in 1:table_rows) {
+    factor_table$probs[row_counter] = factor_table$probs[row_counter] / normalizing_denominator
+  }
+  
+  return(factor_table)
+  
+} 
 
 ## Run inference on a Bayesian network
 ## bayesnet: a list of factor tables
@@ -479,7 +458,16 @@ observe = function(bayesnet, obsVars, obsVals) {
 ## should be normalized to sum to one.
 infer = function(bayesnet, margVars, obsVars, obsVals)
 {
-  ## Your code here!
+  
+  # Observe values 
+  bayesnet = observe(bayesnet, obsVars, obsVals)
+  
+  # Marginalize values
+  bayesnet = marginalize(bayesnet, margVars)
+  
+  # Return the normalized bayes net
+  return(normalize_factor(factors_product(bayesnet)))
+  
 }
 
 ## Return the variable that should be marginalized next from the bayes net.
