@@ -460,7 +460,9 @@ infer = function(bayesnet, margVars, obsVars, obsVals)
 {
   
   # Observe values 
-  bayesnet = observe(bayesnet, obsVars, obsVals)
+  if (!is.null(obsVars)) {
+    bayesnet = observe(bayesnet, obsVars, obsVals)
+  }
   
   # Marginalize values
   bayesnet = marginalize(bayesnet, margVars)
