@@ -465,7 +465,9 @@ infer = function(bayesnet, margVars, obsVars, obsVals)
   }
   
   # Marginalize values
-  bayesnet = marginalize(bayesnet, margVars)
+  if (!is.null(margVars)) {
+    bayesnet = marginalize(bayesnet, margVars)
+  }
   
   # Return the normalized bayes net
   return(normalize_factor(factors_product(bayesnet)))
