@@ -119,3 +119,60 @@ for (factor_table in outcome_tables) {
   print(kable(factor_table, caption = caption_text))  
 }
 ```
+
+
+\begin{enumerate}
+
+  \item[3.] Evaluate the effect a person’s income has on their probability of having one of the four health outcomes (diabetes, stroke, heart attack, angina). For each of these four outcomes, plot their probability given income status (your horizontal axis should be $i = 1,2,\ldots,8$, and your vertical axis should be $P(y = 1|income = i)$, where $y$ is the outcome). What can you conclude?
+
+\end{enumerate}
+
+```{r q3, echo=FALSE, results='asis'}
+# Outcome probabilities by income level
+diabetes_probability_by_income = numeric()
+stroke_probability_by_income = numeric()
+attack_probability_by_income = numeric()
+angina_probability_by_income = numeric()
+
+# For each income level
+for (income_level in 1:8) {
+  
+  # Find the probability of a bad outcome
+  outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, 
+                                       health_outcomes=health_outcomes, 
+                                       observe_variables=c("income"), 
+                                       observe_values=c(income_level))
+  
+  # Store diabetes outcome probability
+  diabetes_factor_table = outcome_tables[[which(health_outcomes == "diabetes")]]
+  probability_value = diabetes_factor_table[which(diabetes_factor_table[["diabetes"]] == diabetes_values[1]), 1]
+  diabetes_probability_by_income[income_level] = probability_value
+  
+  # Stroke stroke outcome probability
+  stroke_factor_table = outcome_tables[[which(health_outcomes == "stroke")]]
+  probability_value = stroke_factor_table[which(stroke_factor_table[["stroke"]] == stroke_values[1]), 1]
+  stroke_probability_by_income[income_level] = probability_value
+  
+  # Store heart attack outcome probability
+  attack_factor_table = outcome_tables[[which(health_outcomes == "attack")]]
+  probability_value = attack_factor_table[which(attack_factor_table[["attack"]] == attack_values[1]), 1]
+  attack_probability_by_income[income_level] = probability_value
+  
+  # Store angina outcome probability
+  angina_factor_table = outcome_tables[[which(health_outcomes == "angina")]]
+  probability_value = angina_factor_table[which(angina_factor_table[["angina"]] == angina_values[1]), 1]
+  angina_probability_by_income[income_level] = probability_value
+
+}
+
+# Plot the health outcome probabilities by income level
+par(mar=c(8,3,1,6))
+plot(1:8, diabetes_probability_by_income, main="Health Outcome Probability by Income Level", type='l', col="red", xlab="", ylab="Outcome Probability", xaxt="n", ylim=c(0.03,0.16), lwd=3)
+lines(1:8, stroke_probability_by_income, col="blue", lwd=3)
+lines(1:8, attack_probability_by_income, col="green", lwd=3)
+lines(1:8, angina_probability_by_income, col="magenta", lwd=3)
+axis(side=1, at=1:8, labels=c("< $10,000","$10,000 - $15,000","$15,000, - $20,000","$20,000 - $25,000","$25,000 - $35,000","$35,000 - $50,000","$50,000 - $75,000","> $75,000"), las=2)
+legend("topright", xpd=TRUE, text.width=0.9, inset=c(-0.2,0), legend=c("diabetes", "angina", "attack", "stroke"), col = c("red", "magenta", "green", "blue"), lwd=3, bg="white")
+```
+
+It looks like overall the probability of a bad health outcome reduces with increasing income. However, it looks like the probability first increases from the lowest to the next highest income and then reduces.
