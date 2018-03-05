@@ -507,6 +507,6 @@ next_to_marginalize = function(bayes_net, variables_to_marginalize) {
   
   # Return the variable that will result in the smallest table when marginalized
   variable_and_table_sizes = data.frame(variables = variables_to_marginalize, table_sizes = marginalized_tables_size, stringsAsFactors = FALSE)
-  return(variable_and_table_sizes[order(variable_and_table_sizes$table_sizes), ][[1]][1])
-  
+  return(variables_to_marginalize[[order(variable_and_table_sizes$table_sizes)[1]]])
+
 }

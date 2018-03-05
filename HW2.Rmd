@@ -1,0 +1,121 @@
+---
+title: 'CS6190: Probabilistic Modeling Homework 2
+Bayesian Networks'
+author: "Gopal Menon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{mathtools}
+- \usepackage{amsmath}
+- \usepackage{dirtytalk}
+- \DeclareMathOperator{\Unif}{Unif}
+- \DeclareMathOperator{\E}{E}
+- \DeclareMathOperator{\Var}{Var}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\hrule
+
+\section*{Written Part}
+
+\begin{enumerate}
+
+\item The total probability of the network is given by
+\textbf{Hint:} Start with the identity $\int p(x) dx = 1$, and take the derivative with respect to $\eta$.
+
+$$ 
+\begin{aligned} 
+p(Beysian\;Network)&=p(income)p(smoke|income)p(exercise|income)p(bmi|income,exercise)\\&\times p(blood\;pressure|exercise, income, smoking)p(cholesterol| exercise, income, smoking) \\ &\times p(diabetes | bmi)p(stroke | bmi, bp, cholesterol)p(attack | bmi, bp, cholesterol)\\ &\times p(angina | bmi, bp, cholesterol)
+\end{aligned}
+$$
+The total probability distribution requires the product of $10$ random variables. If the probabilities are multiplied as shown above, the probability table will have $10$ variables. Number of allowed states for the random variables are:
+
+\end{enumerate}
+
+```{r init, echo=FALSE, results='asis'}
+source("BRFSS Bayes Net.R")
+load_libraries()
+survey_variables = c("income", "exercise", "smoke", "bmi", "bp", "cholesterol", 
+                     "angina", "stroke", "attack", "diabetes")
+survey_variables_states = c(8, 2, 2, 4, 4, 2, 2, 2, 2, 4)
+beysian_network_vars_states = data.frame(survey_variables, survey_variables_states)
+names(beysian_network_vars_states) = c("Survey Variable", "Number of states")
+print(kable(beysian_network_vars_states, caption = "CDC Survey Variable states"))
+```
+
+The maximum number of rows in the probability distribution table for the above variables will be the product of the number of allowed states - $8\times2\times2\times4\times4\times2\times2\times2\times2\times4=32768$. This is the number of probabilities that are needed to store the full joint distribution.
+
+\begin{enumerate}
+  \item[2.] For each of the four health outcomes (diabetes, stroke, heart attack, angina) 
+  \begin{enumerate}
+    \item Probability of the outcome if I have bad habits (smoke and don’t exercise)? How about if I have good habits (don’t smoke and do exercise)?
+  \end{enumerate}
+\end{enumerate}
+
+```{r q1q2, echo=FALSE, results='asis'}
+
+## 1.
+# Create the Bayesian network to analyze the survey results. It will be the product of 
+# all the probabilities corresponding to the full joint distribution. 
+risk_factors_bayes_net = create_bayes_net()
+
+## 2.
+# For each of the four health outcomes (diabetes, stroke, heart attack, angina), answer the following by 
+# querying the network
+
+## (a)
+# What is the probability of the outcome if I have bad habits (smoke and don’t exercise)? 
+outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, 
+                                     health_outcomes=health_outcomes, 
+                                     observe_variables=habit_variables, 
+                                     observe_values=bad_habit_values)
+table_counter = 0
+for (factor_table in outcome_tables) {
+  table_counter = table_counter + 1
+  caption_text = paste("Probability for ", health_outcomes[table_counter], " with smoking and no exercise")
+  print(kable(factor_table, caption = caption_text))  
+}
+
+# How about if I have good habits (don’t smoke and do exercise)?
+outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=habit_variables, observe_values=good_habit_values)
+table_counter = 0
+for (factor_table in outcome_tables) {
+  table_counter = table_counter + 1
+  caption_text = paste("Probability for ", health_outcomes[table_counter], " with no smoking and exercise")
+  print(kable(factor_table, caption = caption_text))  
+}
+```
+
+\begin{enumerate}
+
+  \item[(b)] What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)? What if I have good health (low blood pressure, low cholesterol, and normal weight)?
+
+\end{enumerate}
+
+```{r q2contd, echo=FALSE, results='asis'}
+
+## (b)
+# What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)?
+outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=health_variables, observe_values=bad_health_values)
+table_counter = 0
+for (factor_table in outcome_tables) {
+  table_counter = table_counter + 1
+  caption_text = paste("Probability for ", health_outcomes[table_counter], " with bad health")
+  print(kable(factor_table, caption = caption_text))  
+}
+
+# What if I have good health (low blood pressure, low cholesterol, and normal weight)?
+outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=health_variables, observe_values=good_health_values)
+table_counter = 0
+for (factor_table in outcome_tables) {
+  table_counter = table_counter + 1
+  caption_text = paste("Probability for ", health_outcomes[table_counter], " with good health")
+  print(kable(factor_table, caption = caption_text))  
+}
+```
