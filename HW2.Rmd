@@ -27,7 +27,6 @@ knitr::opts_chunk$set(echo = TRUE)
 \begin{enumerate}
 
 \item The total probability of the network is given by
-\textbf{Hint:} Start with the identity $\int p(x) dx = 1$, and take the derivative with respect to $\eta$.
 
 $$ 
 \begin{aligned} 
@@ -63,33 +62,14 @@ The maximum number of rows in the probability distribution table for the above v
 ## 1.
 # Create the Bayesian network to analyze the survey results. It will be the product of 
 # all the probabilities corresponding to the full joint distribution. 
-risk_factors_bayes_net = create_bayes_net()
+risk_factors_bayes_net_q1 = create_bayes_net()
 
 ## 2.
 # For each of the four health outcomes (diabetes, stroke, heart attack, angina), answer the following by 
 # querying the network
 
-## (a)
-# What is the probability of the outcome if I have bad habits (smoke and don’t exercise)? 
-outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, 
-                                     health_outcomes=health_outcomes, 
-                                     observe_variables=habit_variables, 
-                                     observe_values=bad_habit_values)
-table_counter = 0
-for (factor_table in outcome_tables) {
-  table_counter = table_counter + 1
-  caption_text = paste("Probability for ", health_outcomes[table_counter], " with smoking and no exercise")
-  print(kable(factor_table, caption = caption_text))  
-}
-
-# How about if I have good habits (don’t smoke and do exercise)?
-outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=habit_variables, observe_values=good_habit_values)
-table_counter = 0
-for (factor_table in outcome_tables) {
-  table_counter = table_counter + 1
-  caption_text = paste("Probability for ", health_outcomes[table_counter], " with no smoking and exercise")
-  print(kable(factor_table, caption = caption_text))  
-}
+## (a) What is the probability of the outcome corresponding to bad and good habits
+impact_of_habits_on_outcomes(bayes_net=risk_factors_bayes_net_q1)
 ```
 
 \begin{enumerate}
@@ -100,26 +80,9 @@ for (factor_table in outcome_tables) {
 
 ```{r q2contd, echo=FALSE, results='asis'}
 
-## (b)
-# What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)?
-outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=health_variables, observe_values=bad_health_values)
-table_counter = 0
-for (factor_table in outcome_tables) {
-  table_counter = table_counter + 1
-  caption_text = paste("Probability for ", health_outcomes[table_counter], " with bad health")
-  print(kable(factor_table, caption = caption_text))  
-}
-
-# What if I have good health (low blood pressure, low cholesterol, and normal weight)?
-outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, health_outcomes=health_outcomes, observe_variables=health_variables, observe_values=good_health_values)
-table_counter = 0
-for (factor_table in outcome_tables) {
-  table_counter = table_counter + 1
-  caption_text = paste("Probability for ", health_outcomes[table_counter], " with good health")
-  print(kable(factor_table, caption = caption_text))  
-}
+## (b) What is the probability of the outcome corresponding to bad and good health
+impact_of_health_on_outcomes(bayes_net=risk_factors_bayes_net_q1)
 ```
-
 
 \begin{enumerate}
 
@@ -138,7 +101,7 @@ angina_probability_by_income = numeric()
 for (income_level in 1:8) {
   
   # Find the probability of a bad outcome
-  outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net, 
+  outcome_tables = get_health_outcomes(bayes_net=risk_factors_bayes_net_q1, 
                                        health_outcomes=health_outcomes, 
                                        observe_variables=c("income"), 
                                        observe_values=c(income_level))
@@ -166,7 +129,7 @@ for (income_level in 1:8) {
 }
 
 # Plot the health outcome probabilities by income level
-par(mar=c(8,3,1,6))
+par(mar=c(8,4,1,6))
 plot(1:8, diabetes_probability_by_income, main="Health Outcome Probability by Income Level", type='l', col="red", xlab="", ylab="Outcome Probability", xaxt="n", ylim=c(0.03,0.16), lwd=3)
 lines(1:8, stroke_probability_by_income, col="blue", lwd=3)
 lines(1:8, attack_probability_by_income, col="green", lwd=3)
@@ -176,3 +139,10 @@ legend("topright", xpd=TRUE, text.width=0.9, inset=c(-0.2,0), legend=c("diabetes
 ```
 
 It looks like overall the probability of a bad health outcome reduces with increasing income. However, it looks like the probability first increases from the lowest to the next highest income and then reduces.
+
+\begin{enumerate}
+
+  \item[4.] Notice there are no links in the graph between the habits (smoking and exercise) and the outcomes. What assumption is this making about the effects of smoking and exercise on health problems? Let’s test the validity of these assumptions. Create a second Bayesian network as above, but add edges from smoking to each of the four outcomes and edges from exercise to each of the four outcomes. Now redo the queries in Question 2. What was the effect, and do you think the assumptions of the first graph were valid or not?
+
+I think the assumption here is that the habits (smoking and exercise) have an impact on the health (bmi, bp and cholesterol) of the person and thus indirectly impact the outcomes (diabetes, stroke, attack and angina).
+\end{enumerate}
