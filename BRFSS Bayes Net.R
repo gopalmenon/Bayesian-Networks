@@ -29,6 +29,9 @@ names(outcome_codes) = health_outcomes
 outcome_values = list(diabetes_values, stroke_values, attack_values, angina_values)
 names(outcome_values) = health_outcomes
 
+# Load data collected by the CDC in the 2015 Behavioral Risk Factor Surveillance System (BRFSS) survey.
+cdc_survey_data = read.csv(file="RiskFactors.csv", header=TRUE, sep=",")
+
 ## load libraries
 load_libraries = function() {
   library(knitr)
@@ -106,9 +109,6 @@ show_formatted_table = function(factor_table, headings_to_change, new_headings) 
 ##
 ## Will return the Bayes Net
 create_bayes_net = function() {
-  
-  # Load data collected by the CDC in the 2015 Behavioral Risk Factor Surveillance System (BRFSS) survey.
-  cdc_survey_data = read.csv(file="RiskFactors.csv", header=TRUE, sep=",")
   
   risk_factors_bayes_net = list()
   
@@ -249,5 +249,40 @@ impact_of_health_on_outcomes = function(bayes_net) {
     caption_text = paste("Probability for ", health_outcomes[table_counter], " with good health")
     print(kable(factor_table, caption = caption_text))  
   }
+  
+}
+
+## Update the bayes net so that habits affect outcomes
+## bayes_net: the bayes net
+##
+## Will return the input bayes net with edges from smoking to each of the four outcomes and edges from
+## exercise to each of the four outcomes.
+make_habits_impact_outcomes = function(bayes_net) {
+  
+  # Add diabetes given smoking
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","smoke"))
+  
+  # Add stroke given smoking
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","smoke"))
+  
+  # Add heart attack given smoking
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","smoke"))
+  
+  # Add angina given smoking
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","smoke"))
+  
+  # Add diabetes given exercise
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","exercise"))
+  
+  # Add stroke given exercise
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","exercise"))
+  
+  # Add heart attack given exercise
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","exercise"))
+  
+  # Add angina given exercise
+  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","exercise"))
+  
+  return(bayes_net)
   
 }

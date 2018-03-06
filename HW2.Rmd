@@ -146,3 +146,15 @@ It looks like overall the probability of a bad health outcome reduces with incre
 
 I think the assumption here is that the habits (smoking and exercise) have an impact on the health (bmi, bp and cholesterol) of the person and thus indirectly impact the outcomes (diabetes, stroke, attack and angina).
 \end{enumerate}
+
+```{r q4, echo=FALSE, results='asis'}
+# Make habits impact outcomes
+risk_factors_bayes_net_q4 = make_habits_impact_outcomes(bayes_net=risk_factors_bayes_net_q1)
+
+## (a) What is the probability of the outcome corresponding to bad and good habits
+impact_of_habits_on_outcomes(bayes_net=risk_factors_bayes_net_q4)
+
+## (b) What is the probability of the outcome corresponding to bad and good health
+impact_of_health_on_outcomes(bayes_net=risk_factors_bayes_net_q4)
+```
+
