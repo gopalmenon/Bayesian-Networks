@@ -155,13 +155,10 @@ create_bayes_net = function() {
 get_health_outcomes = function(bayes_net, health_outcomes, observe_variables, observe_values) {
 
   health_outcomes_tables = list()
-  outcome_counter = 0
-  
+
   # Find probability of health outcomes with observed variables like habits
   for (my_outcome in health_outcomes) {
   
-    outcome_counter = outcome_counter + 1
-    
     # Do not marginalize the observed variables and the outcome being considered
     outcomes_to_not_marginalize = c(observe_variables, my_outcome)
     outcomes_to_marginalize = cdc_survey_variables[!(cdc_survey_variables %in% outcomes_to_not_marginalize)]
@@ -252,37 +249,120 @@ impact_of_health_on_outcomes = function(bayes_net) {
   
 }
 
-## Update the bayes net so that habits affect outcomes
+## Create a bayes net where habits affect outcomes
+##
+## Will return a bayes net with edges from smoking to each of the four outcomes and edges from
+## exercise to each of the four outcomes.
+make_habits_impact_outcomes = function() {
+  
+  risk_factors_bayes_net = list()
+  
+  # Add income.
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("income"))
+  
+  # Add smoke status given income
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("smoke","income"))
+  
+  # Add exercise given income
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("exercise","income"))
+  
+  # Add bmi given income and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("bmi","income", "exercise"))
+  
+  # Add blood pressure given exercise, income and smoking
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("bp","exercise", "income", "smoke"))
+  
+  # Add cholesterol given exercise, income and smoking
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("cholesterol","exercise", "income", "smoke"))
+  
+  # Add diabetes given bmi, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","bmi", "smoke", "exercise"))
+  
+  # Add stroke given bmi, bp, cholesterol, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","bmi", "bp", "cholesterol", "smoke", "exercise"))
+  
+  # Add attack given bmi, bp, cholesterol, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","bmi", "bp", "cholesterol", "smoke", "exercise"))
+  
+  # Add angina given bmi, bp, cholesterol, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","bmi", "bp", "cholesterol", "smoke", "exercise"))
+  
+  return(risk_factors_bayes_net)
+  
+}
+
+## Create a bayes net where diabetes affects stroke
+##
+## Will a bayes net with edges from diabetes to stroke
+make_diabetes_impact_stroke_outcome = function() {
+  
+  risk_factors_bayes_net = list()
+  
+  # Add income.
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("income"))
+  
+  # Add smoke status given income
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("smoke","income"))
+  
+  # Add exercise given income
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("exercise","income"))
+  
+  # Add bmi given income and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("bmi","income", "exercise"))
+  
+  # Add blood pressure given exercise, income and smoking
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("bp","exercise", "income", "smoke"))
+  
+  # Add cholesterol given exercise, income and smoking
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("cholesterol","exercise", "income", "smoke"))
+  
+  # Add diabetes given bmi, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","bmi", "smoke", "exercise"))
+  
+  # Add stroke given bmi, bp, cholesterol, smoking, exercise and diabetes
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","bmi", "bp", "cholesterol", "smoke", "exercise", "diabetes"))
+  
+  # Add attack given bmi, bp, cholesterol, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","bmi", "bp", "cholesterol", "smoke", "exercise"))
+  
+  # Add angina given bmi, bp, cholesterol, smoking and exercise
+  risk_factors_bayes_net[[length(risk_factors_bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","bmi", "bp", "cholesterol", "smoke", "exercise"))
+  
+  return(risk_factors_bayes_net)
+  
+}
+## Print the impact of diabetes on stroke outcome
 ## bayes_net: the bayes net
 ##
-## Will return the input bayes net with edges from smoking to each of the four outcomes and edges from
-## exercise to each of the four outcomes.
-make_habits_impact_outcomes = function(bayes_net) {
+## Will print the impact of diabetes on stroke outcome
+impact_of_diabetes_on_stroke = function(bayes_net) {
   
-  # Add diabetes given smoking
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","smoke"))
+  evaluated_outcome_stroke = c("stroke")
+  observed_var_diabetes = c("diabetes")
+  observed_val_have_diabetes = c("1")
+  observed_val_no_diabetes = c("3")
   
-  # Add stroke given smoking
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","smoke"))
+  # What is the probability of a stroke if I have diabetes?
+  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+                                       health_outcomes=evaluated_outcome_stroke, 
+                                       observe_variables=observed_var_diabetes, 
+                                       observe_values=observed_val_have_diabetes)
+  table_counter = 0
+  for (factor_table in outcome_tables) {
+    table_counter = table_counter + 1
+    caption_text = paste("Probability for stroke when diabetes is present")
+    print(kable(factor_table, caption = caption_text))  
+  }
   
-  # Add heart attack given smoking
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","smoke"))
-  
-  # Add angina given smoking
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","smoke"))
-  
-  # Add diabetes given exercise
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("diabetes","exercise"))
-  
-  # Add stroke given exercise
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("stroke","exercise"))
-  
-  # Add heart attack given exercise
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("attack","exercise"))
-  
-  # Add angina given exercise
-  bayes_net[[length(bayes_net) + 1]] = createCPTfromData(cdc_survey_data, c("angina","exercise"))
-  
-  return(bayes_net)
-  
+  # What is the probability of a stroke if I do not have diabetes?
+  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+                                       health_outcomes=evaluated_outcome_stroke, 
+                                       observe_variables=observed_var_diabetes, 
+                                       observe_values=observed_val_no_diabetes)
+  table_counter = 0
+  for (factor_table in outcome_tables) {
+    table_counter = table_counter + 1
+    caption_text = paste("Probability for stroke when diabetes is not present")
+    print(kable(factor_table, caption = caption_text))  
+  }
 }

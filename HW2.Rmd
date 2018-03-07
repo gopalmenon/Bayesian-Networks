@@ -144,12 +144,12 @@ It looks like overall the probability of a bad health outcome reduces with incre
 
   \item[4.] Notice there are no links in the graph between the habits (smoking and exercise) and the outcomes. What assumption is this making about the effects of smoking and exercise on health problems? Let’s test the validity of these assumptions. Create a second Bayesian network as above, but add edges from smoking to each of the four outcomes and edges from exercise to each of the four outcomes. Now redo the queries in Question 2. What was the effect, and do you think the assumptions of the first graph were valid or not?
 
-I think the assumption here is that the habits (smoking and exercise) have an impact on the health (bmi, bp and cholesterol) of the person and thus indirectly impact the outcomes (diabetes, stroke, attack and angina).
+I think the assumption made in the graph is that the habits (smoking and exercise) have an impact on the health (bmi, bp and cholesterol) of the person and thus indirectly impact the outcomes (diabetes, stroke, attack and angina).
 \end{enumerate}
 
 ```{r q4, echo=FALSE, results='asis'}
 # Make habits impact outcomes
-risk_factors_bayes_net_q4 = make_habits_impact_outcomes(bayes_net=risk_factors_bayes_net_q1)
+risk_factors_bayes_net_q4 = make_habits_impact_outcomes()
 
 ## (a) What is the probability of the outcome corresponding to bad and good habits
 impact_of_habits_on_outcomes(bayes_net=risk_factors_bayes_net_q4)
@@ -158,3 +158,51 @@ impact_of_habits_on_outcomes(bayes_net=risk_factors_bayes_net_q4)
 impact_of_health_on_outcomes(bayes_net=risk_factors_bayes_net_q4)
 ```
 
+\begin{enumerate}
+
+\item[5.] Also notice there are no edges between the four outcomes. What assumption is this making about the interactions between health problems? Make a third network, starting from the network in Question 4, but adding an edge from diabetes to stroke. For both networks, evaluate the following probabilities:
+
+P(stroke = 1|diabetes = 1) and P(stroke = 1|diabetes = 3)
+
+Again, what was the effect, and was the assumption about the interaction between diabetes
+and stroke valid?
+
+\end{enumerate}
+
+```{r q5, echo=FALSE, results='asis'}
+# Make diabetes impact stroke outcome
+risk_factors_bayes_net_q5 = make_diabetes_impact_stroke_outcome()
+
+#Print the impact
+impact_of_diabetes_on_stroke(bayes_net=risk_factors_bayes_net_q5) 
+```
+
+\begin{enumerate}
+
+\item[6.] Finally, make sure that your code runs correctly on all of the examples in BayesNetExamples.r. Your code will be graded for correctness on these also.
+
+\end{enumerate}
+
+```{r q6, echo=FALSE, results='asis'}
+source("BayesNetworkExamples.r")
+
+cbt8.30 = infer(carNet, c("battery", "fuel"), NULL, NULL)     ## (8.30)
+cbt8.31 = infer(carNet, c("battery"), "fuel", 0)              ## (8.31)
+cbt8.32 = infer(carNet, c("battery"), "gauge", 0)             ## (8.32)
+cbt8.33 = infer(carNet, NULL, c("gauge", "battery"), c(0, 0)) ## (8.33)
+
+print(kable(cbt8.30, caption = "Bishop 8.30 - p(G = 0)"))  
+print(kable(cbt8.31, caption = "Bishop 8.31 - p(G = 0|F = 0)"))  
+print(kable(cbt8.32, caption = "Bishop 8.32 - p(F = 0|G = 0)"))  
+print(kable(cbt8.33, caption = "Bishop 8.33 - p(F = 0|G = 0, B = 0)"))  
+
+kmt1 = infer(grassNet, c("cloudy", "rain"), "wet", "T")                                      ## Pr(S|W=1)
+kmt2 = infer(grassNet, c("cloudy", "sprinkler"), "wet", "T")                                 ## Pr(R|W=1)
+kmt3 = infer(grassNet, c("cloudy", "sprinkler", "rain"), NULL, NULL)                         ## Pr(W)
+kmt4 = infer(grassNet, c("cloudy"), c("wet", "rain"), c("T", "T"))                           ## Pr(S|W=1,R=1)
+
+print(kable(kmt1, caption = "Kevin Murphy - Pr(S=1|W=1)"))  
+print(kable(kmt2, caption = "Kevin Murphy - Pr(R=1|W=1)"))  
+print(kable(kmt3, caption = "Kevin Murphy - Pr(W=1)"))  
+print(kable(kmt4, caption = "Kevin Murphy - Pr(S=1|W=1,R=1)"))  
+```
