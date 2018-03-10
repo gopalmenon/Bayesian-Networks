@@ -375,7 +375,7 @@ make_diabetes_impact_stroke_outcome = function() {
 ## bayes_net: the bayes net
 ##
 ## Will print the impact of diabetes on stroke outcome
-impact_of_diabetes_on_stroke = function(bayes_net) {
+impact_of_diabetes_on_stroke = function(bayes_net, link_from_diabetes_to_stroke) {
   
   evaluated_outcome_stroke = c("stroke")
   observed_var_diabetes = c("diabetes")
@@ -388,10 +388,19 @@ impact_of_diabetes_on_stroke = function(bayes_net) {
                                        observe_variables=observed_var_diabetes, 
                                        observe_values=observed_val_have_diabetes)
   table_counter = 0
+  
+  caption_text_qualifier = ""
+  if (isTRUE(link_from_diabetes_to_stroke)) {
+    caption_text_qualifier = "- edge from diabetes to stroke"
+  } else {
+    caption_text_qualifier = "- no edge from diabetes to stroke"
+  }
+    
+  caption_text = "Probability for stroke when diabetes is present"
+  
   for (factor_table in outcome_tables) {
     table_counter = table_counter + 1
-    caption_text = paste("Probability for stroke when diabetes is present")
-    print(kable(factor_table, caption = caption_text))  
+    print(kable(factor_table, caption = paste(caption_text, caption_text_qualifier)))  
   }
   
   # What is the probability of a stroke if I do not have diabetes?
@@ -400,9 +409,9 @@ impact_of_diabetes_on_stroke = function(bayes_net) {
                                        observe_variables=observed_var_diabetes, 
                                        observe_values=observed_val_no_diabetes)
   table_counter = 0
+  caption_text = "Probability for stroke when diabetes is not present"
   for (factor_table in outcome_tables) {
     table_counter = table_counter + 1
-    caption_text = paste("Probability for stroke when diabetes is not present")
-    print(kable(factor_table, caption = caption_text))  
+    print(kable(factor_table, caption = paste(caption_text, caption_text_qualifier)))  
   }
 }
