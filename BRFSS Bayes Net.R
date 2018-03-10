@@ -4,6 +4,8 @@ source("BayesianNetworks-template.r")
 # Risk factors collected in the survey
 cdc_survey_variables = list("income", "exercise", "smoke", "bmi", "bp", "cholesterol", "angina", 
                             "stroke", "attack", "diabetes")
+survey_variables_states = c(8, 2, 2, 4, 4, 2, 2, 2, 2, 4)
+
 # Health outcomes and habits 
 health_outcomes = c("diabetes", "stroke", "attack", "angina")
 
@@ -56,6 +58,20 @@ change_table_headings = function(factor_table, headings_to_change, new_headings)
   return(factor_table)
   
 }  
+
+## Compute number of probabilities that need to be stored for bayes net node 
+## variables_in_node: variables that affect the node plus the node itself
+##
+## Will return number of probabilities that need to be stored for bayes net node 
+probabilities_in_node = function(variables_in_node) {
+  
+  probabilities_to_store = 1.0
+  for (survey_variable in variables_in_node) {
+    probabilities_to_store = probabilities_to_store * survey_variables_states[which(cdc_survey_variables == survey_variable)]
+  }
+  return(probabilities_to_store)
+
+}
 
 ## Drop columns from table
 ## factor_table: factor tables that needs columns dropped
@@ -234,7 +250,7 @@ impact_of_health_on_outcomes = function(bayes_net) {
                                        observe_values=good_health_values)
 
   print_outcome_probabilities(outcome_table_1=outcome_table_1, 
-                              outcome_table_1_observation="Bad Health", 
+                              outcome_table_1_observation="Poor Health", 
                               outcome_table_2=outcome_table_2, 
                               outcome_table_2_observation="Good Health", 
                               caption_text="Health Outcome Probabilities based on Health")

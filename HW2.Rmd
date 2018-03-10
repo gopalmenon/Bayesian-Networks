@@ -40,15 +40,40 @@ The total probability distribution requires the product of $10$ random variables
 ```{r init, echo=FALSE, results='asis'}
 source("BRFSS Bayes Net.R")
 load_libraries()
-survey_variables = c("income", "exercise", "smoke", "bmi", "bp", "cholesterol", 
-                     "angina", "stroke", "attack", "diabetes")
-survey_variables_states = c(8, 2, 2, 4, 4, 2, 2, 2, 2, 4)
+survey_variables = c("income", "exercise", "smoke", "bmi", "bp", "cholesterol", "angina", 
+                            "stroke", "attack", "diabetes")
 beysian_network_vars_states = data.frame(survey_variables, survey_variables_states)
 names(beysian_network_vars_states) = c("Survey Variable", "Number of states")
 print(kable(beysian_network_vars_states, caption = "CDC Survey Variable states"))
 ```
 
 The maximum number of rows in the probability distribution table for the above variables will be the product of the number of allowed states - $8\times2\times2\times4\times4\times2\times2\times2\times2\times4=32768$. This is the number of probabilities that are needed to store the full joint distribution.
+
+However it is easier and cheaper in terms of memory requirements to store probabilities to corresponding to each node in the Bayes Net. For example the number of probabilities that need to be stored for the node exercise corresponds to $p(exercise|income)$ which will have $2\times 8=16$ different probabilities that need to be stored. The following table shows the number of probabilities that need to be stored at the level of each node.
+
+```{r q1contd, echo=FALSE, results='asis'}
+node_probabilities = c(probabilities_in_node(c("income")), 
+                       probabilities_in_node(c("exercise", "income")), 
+                       probabilities_in_node(c("smoke", "income")), 
+                       probabilities_in_node(c("bmi", "exercise", "income")), 
+                       probabilities_in_node(c("bp", "exercise", "income", "smoke")), 
+                       probabilities_in_node(c("cholesterol", "exercise", "income", "smoke")), 
+                       probabilities_in_node(c("angina", "bmi", "bp", "cholesterol")), 
+                       probabilities_in_node(c("stroke", "bmi", "bp", "cholesterol")), 
+                       probabilities_in_node(c("attack", "bmi", "bp", "cholesterol")),
+                       probabilities_in_node(c("diabetes", "bmi")))
+
+variables_column = survey_variables
+variables_column[length(variables_column) + 1] = "Total"
+node_probabilities[length(node_probabilities) + 1] = sum(node_probabilities)
+
+beysian_network_vars_probabilities = data.frame(variables_column, 
+                                                node_probabilities)
+names(beysian_network_vars_probabilities) = c("Survey Variable", "Number of Probabilities")
+print(kable(beysian_network_vars_probabilities, caption = "Number of Probabilities to be stored at node level"))
+```
+
+So it is more efficient to store probabilities at the level of a node and based on the query, marginalize variables that we are not interested in after observing the variables that are given (on the right side of the conditional probability). 
 
 \begin{enumerate}
   \item[2.] For each of the four health outcomes (diabetes, stroke, heart attack, angina) 
