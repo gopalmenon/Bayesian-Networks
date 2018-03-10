@@ -24,6 +24,8 @@ attack_values = c("Will have heart attack", "Will not have heart attack")
 angina_codes = c("1", "2")
 angina_values = c("Will have angina", "Will not have angina")
 
+positive_health_outcomes_codes = c(diabetes_values[1], stroke_values[1], attack_values[1], angina_values[1])
+
 outcome_codes = list(diabetes_codes, stroke_codes, attack_codes, angina_codes)
 names(outcome_codes) = health_outcomes
 outcome_values = list(diabetes_values, stroke_values, attack_values, angina_values)
@@ -192,28 +194,23 @@ get_health_outcomes = function(bayes_net, health_outcomes, observe_variables, ob
 impact_of_habits_on_outcomes = function(bayes_net) {
   
   # What is the probability of the outcome if I have bad habits (smoke and don’t exercise)? 
-  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+  outcome_table_1 = get_health_outcomes(bayes_net=bayes_net, 
                                        health_outcomes=health_outcomes, 
                                        observe_variables=habit_variables, 
                                        observe_values=bad_habit_values)
-  table_counter = 0
-  for (factor_table in outcome_tables) {
-    table_counter = table_counter + 1
-    caption_text = paste("Probability for ", health_outcomes[table_counter], " with smoking and no exercise")
-    print(kable(factor_table, caption = caption_text))  
-  }
+
   
   # How about if I have good habits (don’t smoke and do exercise)?
-  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+  outcome_table_2 = get_health_outcomes(bayes_net=bayes_net, 
                                        health_outcomes=health_outcomes, 
                                        observe_variables=habit_variables, 
                                        observe_values=good_habit_values)
-  table_counter = 0
-  for (factor_table in outcome_tables) {
-    table_counter = table_counter + 1
-    caption_text = paste("Probability for ", health_outcomes[table_counter], " with no smoking and exercise")
-    print(kable(factor_table, caption = caption_text))  
-  }
+
+  print_outcome_probabilities(outcome_table_1=outcome_table_1, 
+                              outcome_table_1_observation="Bad Habits", 
+                              outcome_table_2=outcome_table_2, 
+                              outcome_table_2_observation="Good Habits", 
+                              caption_text="Health Outcome Probabilities based on Habits")
   
 }
 
@@ -224,29 +221,56 @@ impact_of_habits_on_outcomes = function(bayes_net) {
 impact_of_health_on_outcomes = function(bayes_net) {
   
   # What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)?
-  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+  outcome_table_1 = get_health_outcomes(bayes_net=bayes_net, 
                                        health_outcomes=health_outcomes, 
                                        observe_variables=health_variables, 
                                        observe_values=bad_health_values)
-  table_counter = 0
-  for (factor_table in outcome_tables) {
-    table_counter = table_counter + 1
-    caption_text = paste("Probability for ", health_outcomes[table_counter], " with bad health")
-    print(kable(factor_table, caption = caption_text))  
-  }
+
   
   # What if I have good health (low blood pressure, low cholesterol, and normal weight)?
-  outcome_tables = get_health_outcomes(bayes_net=bayes_net, 
+  outcome_table_2 = get_health_outcomes(bayes_net=bayes_net, 
                                        health_outcomes=health_outcomes, 
                                        observe_variables=health_variables, 
                                        observe_values=good_health_values)
+
+  print_outcome_probabilities(outcome_table_1=outcome_table_1, 
+                              outcome_table_1_observation="Bad Health", 
+                              outcome_table_2=outcome_table_2, 
+                              outcome_table_2_observation="Good Health", 
+                              caption_text="Health Outcome Probabilities based on Health")
+  
+}
+
+## Print outcome probability table
+##
+## outcome_table_1: Tables for health outcome 1 
+## outcome_table_1_observation: Description for health outcome 1 observed value
+## outcome_table_2: Tables for health outcome 2
+## outcome_table_2_observation: Description for health outcome 2 observed value
+##
+## Print formatted table with each outcome on a row with probability under various observed vales
+print_outcome_probabilities = function(outcome_table_1, outcome_table_1_observation, outcome_table_2, outcome_table_2_observation, caption_text) {
+  
   table_counter = 0
-  for (factor_table in outcome_tables) {
+  table_1_probabilities = numeric()
+  for (factor_table in outcome_table_1) {
     table_counter = table_counter + 1
-    caption_text = paste("Probability for ", health_outcomes[table_counter], " with good health")
-    print(kable(factor_table, caption = caption_text))  
+    table_1_probabilities[length(table_1_probabilities) + 1] = 
+      factor_table[["Probability"]][which(factor_table[[health_outcomes[table_counter]]] == positive_health_outcomes_codes[table_counter])]
+  }
+
+  table_counter = 0
+  table_2_probabilities = numeric()
+  for (factor_table in outcome_table_2) {
+    table_counter = table_counter + 1
+    table_2_probabilities[length(table_2_probabilities) + 1] = 
+      factor_table[["Probability"]][which(factor_table[[health_outcomes[table_counter]]] == positive_health_outcomes_codes[table_counter])]
   }
   
+  table_to_print = data.frame(health_outcomes, table_1_probabilities, table_2_probabilities)
+  names(table_to_print) = c("Health Outcome", outcome_table_1_observation, outcome_table_2_observation)
+  print(kable(table_to_print, caption = caption_text))  
+
 }
 
 ## Create a bayes net where habits affect outcomes
