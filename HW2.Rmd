@@ -49,7 +49,7 @@ print(kable(beysian_network_vars_states, caption = "CDC Survey Variable states")
 
 The maximum number of rows in the probability distribution table for the above variables will be the product of the number of allowed states - $8\times2\times2\times4\times4\times2\times2\times2\times2\times4=32768$. This is the number of probabilities that are needed to store the full joint distribution.
 
-However it is easier and cheaper in terms of memory requirements to store probabilities to corresponding to each node in the Bayes Net. For example the number of probabilities that need to be stored for the node exercise corresponds to $p(exercise|income)$ which will have $2\times 8=16$ different probabilities that need to be stored. The following table shows the number of probabilities that need to be stored at the level of each node.
+However it is easier and cheaper in terms of memory requirements to store probabilities corresponding to each node in the Bayes Net. For example the number of probabilities that need to be stored for the node exercise corresponds to $p(exercise|income)$ which will have $2\times 8=16$ different probabilities that need to be stored. The following table shows the number of probabilities that need to be stored at the level of each node.
 
 ```{r q1contd, echo=FALSE, results='asis'}
 node_probabilities = c(probabilities_in_node(c("income")), 
