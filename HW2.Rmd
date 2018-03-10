@@ -207,7 +207,7 @@ impact_of_diabetes_on_stroke(bayes_net=risk_factors_bayes_net_q4, FALSE)
 impact_of_diabetes_on_stroke(bayes_net=risk_factors_bayes_net_q5, TRUE) 
 ```
 
-The assumption being made when there are no edges between the four outcome is that only the health conditions (and the habits when there is a link from them to the outcomes), affect the outcomes and that the presence of one outcome does not impact the probability of another outcome.
+The assumption being made when there are no edges between the four outcomes is that only the health conditions (and the habits when there is a link from them to the outcomes), affect the outcomes and that the presence of one outcome does not impact the probability of another outcome.
 
 When there is no edge in the bayes net from diabetes to stroke, the probability of stroke does not vary much whether diabetes is present or not present. However when there is an edge, probability of stroke is much higher when diabetes is present compared to when it is not. So this suggests that there is an impact of diabetes on the probability of having a stroke. So this suggests that the graph with the edge from diabetes to stroke is a more accurate representation of the model.
 
